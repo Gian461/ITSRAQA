@@ -16,8 +16,18 @@ app.use(express.json());
 
 // Ensure MongoDB is connected before handling API requests
 app.use(async (req, res, next) => {
-  await connectDB();
-  next();
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    if (req.path.startsWith("/api/")) {
+      return res.status(500).json({
+        message: "Database connection error. Ensure MONGO_URI is set in Vercel environment variables.",
+        error: err.message,
+      });
+    }
+    next();
+  }
 });
 
 // API routes
