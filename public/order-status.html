@@ -7,27 +7,23 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-latk px-4">
-  <a class="navbar-brand" href="home.html"><img src="img/logo.svg" width="42" height="42" alt="LATK" /></a>
-  <div class="ms-auto d-flex align-items-center gap-4">
-    <a href="menu.html" class="text-white text-decoration-none">Menu</a>
-    <span class="text-white">User: <strong id="navUserName"></strong></span>
-    <a href="#" class="text-white text-decoration-none" onclick="logout()">Logout</a>
-  </div>
-</nav>
+<div id="navbar"></div>
 
-<div class="container my-5">
+<div class="container my-5 flex-grow-1" style="max-width:900px;">
   <h2 class="fw-bold mb-4">My Orders</h2>
   <div id="ordersList"></div>
 </div>
 
+<div id="footer"></div>
+
 <script src="js/api.js"></script>
+<script src="js/components.js"></script>
 <script>
 requireAuth();
-const user = getUser();
-if (user) document.getElementById("navUserName").textContent = user.firstName || user.username;
+renderNavbar("orders");
+renderFooter();
 
 async function loadOrders() {
   const list = document.getElementById("ordersList");
@@ -40,17 +36,17 @@ async function loadOrders() {
     list.innerHTML = orders
       .map(
         (o) => `
-      <div class="card mb-3 shadow-sm">
-        <div class="card-body">
+      <div class="card mb-3 shadow-sm border-0 stat-card">
+        <div class="card-body p-4">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <strong>Order #${o._id.slice(-6).toUpperCase()}</strong>
             <span class="status-badge status-${o.status.replace(/\s/g, "-")}">${o.status}</span>
           </div>
           <p class="small text-muted mb-2">${new Date(o.createdAt).toLocaleString()}</p>
-          <p class="mb-2">${o.items.map((i) => `${i.name} x${i.qty}`).join(", ")}</p>
-          <div class="d-flex justify-content-between">
-            <span>${o.paymentMethod}</span>
-            <strong>${peso(o.total)}</strong>
+          <p class="mb-2 fw-semibold">${o.items.map((i) => `${i.name} x${i.qty}`).join(", ")}</p>
+          <div class="d-flex justify-content-between pt-2 border-top">
+            <span class="text-muted small">${o.paymentMethod}</span>
+            <strong class="fs-5">${peso(o.total)}</strong>
           </div>
         </div>
       </div>`
@@ -62,5 +58,6 @@ async function loadOrders() {
 }
 loadOrders();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
