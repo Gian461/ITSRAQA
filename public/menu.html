@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menu - LATK Cafe</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-latk px-4">
+  <a class="navbar-brand" href="home.html"><img src="img/logo.svg" width="42" height="42" alt="LATK" /></a>
+  <div class="ms-auto d-flex align-items-center gap-4">
+    <a href="about.html" class="text-white text-decoration-none">About Us</a>
+    <a href="contact.html" class="text-white text-decoration-none">Contact Us</a>
+    <div class="dropdown">
+      <button class="btn btn-maroon dropdown-toggle" data-bs-toggle="dropdown">
+        <span id="navUserName">User</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="order-status.html">My Orders</a></li>
+        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="menu-wrap">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-center mb-4">
+      <div class="btn-group" role="group">
+        <button class="btn btn-maroon px-4" id="tabFood">FOOD</button>
+        <button class="btn btn-outline-light px-4" id="tabDrinks" style="border-color:#fff;color:#fff;">DRINKS</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-2" id="categorySidebar">
+        <!-- subcategory buttons injected by JS -->
+      </div>
+      <div class="col-md-10">
+        <h5 class="text-white fw-bold mb-3" id="sectionCaption">Unli-Rice w/ Dessert!</h5>
+        <div class="row g-3" id="productGrid">
+          <!-- product cards injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="btn btn-maroon cart-fab shadow d-flex align-items-center gap-2 px-3 py-2" id="cartToggleBtn">
+  🛒 Cart <span class="badge bg-light text-dark" id="cartCount">0</span>
+</button>
+
+<div class="cart-drawer" id="cartDrawer">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">My Cart</h4>
+    <button class="btn-close btn-close-white" id="closeCartBtn"></button>
+  </div>
+  <div id="cartItems"><p class="text-white-50">Your cart is empty.</p></div>
+  <hr />
+  <div class="d-flex justify-content-between">
+    <strong>Subtotal</strong>
+    <strong id="cartSubtotal">₱0.00</strong>
+  </div>
+  <p class="small text-white-50 mb-3">Final discounts, savings, and taxes calculated at checkout</p>
+  <button class="btn btn-orange w-100 py-2" id="checkoutBtn">Checkout</button>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+requireAuth();
+const user = getUser();
+if (user) document.getElementById("navUserName").textContent = user.firstName || user.username;
+
+const CATEGORIES = {
+  food: { subs: ["Grilled", "Steak", "Fried"], caption: "Unli-Rice w/ Dessert!" },
+  drinks: { subs: ["Coffee-Based", "Frappuccino", "Matcha"], caption: "Hot & Iced Specialty Drinks" },
+};
+
+let currentType = "food";
+let currentSub = "Grilled";
+let allProducts = [];
+
+async function loadProducts() {
+  const data = await api(`/products?type=${currentType}`);
+  allProducts = data.products;
+  renderSidebar();
+  renderGrid();
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById("categorySidebar");
+  sidebar.innerHTML = "";
+  CATEGORIES[currentType].subs.forEach((sub) => {
+    const btn = document.createElement("button");
+    btn.className = "category-btn" + (sub === currentSub ? " active" : "");
+    btn.textContent = sub;
+    btn.onclick = () => {
+      currentSub = sub;
+      renderSidebar();
+      renderGrid();
+    };
+    sidebar.appendChild(btn);
+  });
+  document.getElementById("sectionCaption").textContent = CATEGORIES[currentType].caption;
+}
+
+function renderGrid() {
+  const grid = document.getElementById("productGrid");
+  grid.innerHTML = "";
+  const items = allProducts.filter((p) => p.subcategory === currentSub);
+  if (!items.length) {
+    grid.innerHTML = '<p class="text-white">No items in this category yet.</p>';
+    return;
+  }
+  items.forEach((p) => {
+    const col = document.createElement("div");
+    col.className = "col-md-4 col-lg-3";
+    col.innerHTML = `
+      <div class="card product-card h-100">
+        <div class="placeholder-img d-flex align-items-center justify-content-center text-secondary">No Image</div>
+        <div class="card-body">
+          <h6 class="fw-bold mb-1">${p.name}</h6>
+          <p class="small text-muted mb-1">${p.description || ""}</p>
+          <p class="fw-bold mb-2">${peso(p.price)}</p>
+          <p class="small ${p.stock <= p.lowStockThreshold ? "text-danger" : "text-success"} mb-2">
+            ${p.stock > 0 ? p.stock + " in stock" : "Out of stock"}
+          </p>
+          <button class="btn btn-orange btn-sm w-100" ${p.stock <= 0 ? "disabled" : ""} data-id="${p._id}">ADD TO CART</button>
+        </div>
+      </div>`;
+    col.querySelector("button").addEventListener("click", () => {
+      addToCart(p);
+      renderCart();
+    });
+    grid.appendChild(col);
+  });
+}
+
+document.getElementById("tabFood").addEventListener("click", () => {
+  currentType = "food";
+  currentSub = CATEGORIES.food.subs[0];
+  document.getElementById("tabFood").className = "btn btn-maroon px-4";
+  document.getElementById("tabDrinks").className = "btn btn-outline-light px-4";
+  document.getElementById("tabDrinks").style.borderColor = "#fff";
+  document.getElementById("tabDrinks").style.color = "#fff";
+  loadProducts();
+});
+document.getElementById("tabDrinks").addEventListener("click", () => {
+  currentType = "drinks";
+  currentSub = CATEGORIES.drinks.subs[0];
+  document.getElementById("tabDrinks").className = "btn btn-maroon px-4";
+  document.getElementById("tabFood").className = "btn btn-outline-light px-4";
+  document.getElementById("tabFood").style.borderColor = "#fff";
+  document.getElementById("tabFood").style.color = "#fff";
+  loadProducts();
+});
+
+// Cart drawer
+const drawer = document.getElementById("cartDrawer");
+document.getElementById("cartToggleBtn").addEventListener("click", () => drawer.classList.add("open"));
+document.getElementById("closeCartBtn").addEventListener("click", () => drawer.classList.remove("open"));
+
+function renderCart() {
+  refreshCartBadge();
+  const cart = getCart();
+  const container = document.getElementById("cartItems");
+  if (!cart.length) {
+    container.innerHTML = '<p class="text-white-50">Your cart is empty.</p>';
+  } else {
+    container.innerHTML = cart
+      .map(
+        (i) => `
+      <div class="d-flex gap-2 align-items-center bg-white bg-opacity-10 rounded p-2 mb-2">
+        <div class="placeholder-img" style="width:56px;height:56px;flex-shrink:0;"></div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between">
+            <strong>${i.name}</strong>
+            <button class="btn btn-sm btn-link text-white p-0" onclick="removeItem('${i.productId}')">✕</button>
+          </div>
+          <div class="small">${peso(i.price)}</div>
+          <div class="d-flex align-items-center gap-2 mt-1">
+            <button class="btn btn-sm btn-light" onclick="changeQty('${i.productId}', -1)">-</button>
+            <span>${i.qty}</span>
+            <button class="btn btn-sm btn-light" onclick="changeQty('${i.productId}', 1)">+</button>
+          </div>
+        </div>
+      </div>`
+      )
+      .join("");
+  }
+  document.getElementById("cartSubtotal").textContent = peso(cartSubtotal());
+}
+function changeQty(id, delta) {
+  updateCartQty(id, delta);
+  renderCart();
+}
+function removeItem(id) {
+  removeFromCart(id);
+  renderCart();
+}
+document.getElementById("checkoutBtn").addEventListener("click", () => {
+  if (!getCart().length) return;
+  window.location.href = "checkout.html";
+});
+
+loadProducts();
+renderCart();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
