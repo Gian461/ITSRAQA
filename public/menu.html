@@ -3,76 +3,101 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Menu - LATK Cafe</title>
+<title>Menu & Ordering - LATK Cafe</title>
+<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-latk px-4">
-  <a class="navbar-brand" href="home.html"><img src="img/logo.svg" width="42" height="42" alt="LATK" /></a>
-  <div class="ms-auto d-flex align-items-center gap-4">
-    <a href="about.html" class="text-white text-decoration-none">About Us</a>
-    <a href="contact.html" class="text-white text-decoration-none">Contact Us</a>
-    <div class="dropdown">
-      <button class="btn btn-maroon dropdown-toggle" data-bs-toggle="dropdown">
-        <span id="navUserName">User</span>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="order-status.html">My Orders</a></li>
-        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<div id="navbar"></div>
 
-<div class="menu-wrap">
-  <div class="container-fluid">
+<!-- Toast Container for Cart Feedback -->
+<div class="toast-container-custom" id="toastContainer"></div>
+
+<div class="menu-wrap flex-grow-1">
+  <div class="container-fluid" style="max-width: 1240px;">
+    
+    <!-- Top Bar: Centered Category Segment -->
     <div class="d-flex justify-content-center mb-4">
-      <div class="btn-group" role="group">
-        <button class="btn btn-maroon px-4" id="tabFood">FOOD</button>
-        <button class="btn btn-outline-light px-4" id="tabDrinks" style="border-color:#fff;color:#fff;">DRINKS</button>
+      <div class="bg-white p-1 rounded-pill shadow-sm d-inline-flex border" role="group">
+        <button class="btn btn-tab-pill px-4 py-2 text-white" id="tabFood" style="background:var(--latk-maroon);">
+          🍔 FOOD
+        </button>
+        <button class="btn btn-tab-pill px-4 py-2 text-dark" id="tabDrinks" style="background:transparent;">
+          ☕ DRINKS
+        </button>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-2" id="categorySidebar">
-        <!-- subcategory buttons injected by JS -->
+    <!-- Main Content Area: Sidebar + Grid -->
+    <div class="row g-4">
+      <!-- Subcategory Sidebar -->
+      <div class="col-lg-3 col-md-4">
+        <div class="bg-white bg-opacity-10 p-3 rounded-4 backdrop-blur border border-white border-opacity-25 shadow-sm">
+          <h6 class="text-white fw-bold mb-3 px-2 text-uppercase tracking-wider fs-7">Categories</h6>
+          <div id="categorySidebar">
+            <!-- Subcategory buttons injected by JS -->
+          </div>
+        </div>
       </div>
-      <div class="col-md-10">
-        <h5 class="text-white fw-bold mb-3" id="sectionCaption">Unli-Rice w/ Dessert!</h5>
+
+      <!-- Product Grid -->
+      <div class="col-lg-9 col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="text-white fw-bold mb-0" id="sectionCaption">Unli-Rice w/ Dessert!</h5>
+          <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-bold shadow-sm" id="itemCountBadge">0 items</span>
+        </div>
         <div class="row g-3" id="productGrid">
           <!-- product cards injected by JS -->
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
-<button class="btn btn-maroon cart-fab shadow d-flex align-items-center gap-2 px-3 py-2" id="cartToggleBtn">
-  🛒 Cart <span class="badge bg-light text-dark" id="cartCount">0</span>
+<!-- Floating Cart Button -->
+<button class="btn btn-maroon cart-fab d-flex align-items-center gap-2 px-4 py-3 fs-6" id="cartToggleBtn">
+  <span>🛒</span> <span class="fw-bold">Cart</span>
+  <span class="badge bg-warning text-dark rounded-pill ms-1 fs-7" id="cartCount">0</span>
 </button>
 
+<!-- Backdrop Blur Overlay for Cart Drawer -->
+<div class="cart-drawer-overlay" id="cartOverlay"></div>
+
+<!-- Sliding Cart Drawer -->
 <div class="cart-drawer" id="cartDrawer">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0">My Cart</h4>
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+    <div class="d-flex align-items-center gap-2">
+      <span class="fs-4">🛒</span>
+      <h4 class="fw-bold mb-0">My Cart</h4>
+    </div>
     <button class="btn-close btn-close-white" id="closeCartBtn"></button>
   </div>
-  <div id="cartItems"><p class="text-white-50">Your cart is empty.</p></div>
-  <hr />
-  <div class="d-flex justify-content-between">
-    <strong>Subtotal</strong>
-    <strong id="cartSubtotal">₱0.00</strong>
+
+  <div class="flex-grow-1 overflow-auto pe-1" id="cartItems">
+    <p class="text-white-50">Your cart is empty.</p>
   </div>
-  <p class="small text-white-50 mb-3">Final discounts, savings, and taxes calculated at checkout</p>
-  <button class="btn btn-orange w-100 py-2" id="checkoutBtn">Checkout</button>
+
+  <div class="pt-3 border-top border-secondary mt-auto">
+    <div class="d-flex justify-content-between fs-5 mb-1">
+      <span class="text-white-50">Subtotal</span>
+      <strong id="cartSubtotal" class="text-warning">₱0.00</strong>
+    </div>
+    <p class="small text-white-50 mb-3">Taxes & standard delivery calculated at checkout</p>
+    <button class="btn btn-orange w-100 py-3 fs-6 fw-bold shadow" id="checkoutBtn">Proceed to Checkout →</button>
+  </div>
 </div>
 
+<div id="footer"></div>
+
 <script src="js/api.js"></script>
+<script src="js/components.js"></script>
 <script>
 requireAuth();
-const user = getUser();
-if (user) document.getElementById("navUserName").textContent = user.firstName || user.username;
+renderNavbar("menu");
+renderFooter();
 
 const CATEGORIES = {
   food: { subs: ["Grilled", "Steak", "Fried"], caption: "Unli-Rice w/ Dessert!" },
@@ -85,7 +110,7 @@ let allProducts = [];
 
 async function loadProducts() {
   const data = await api(`/products?type=${currentType}`);
-  allProducts = data.products;
+  allProducts = data.products || [];
   renderSidebar();
   renderGrid();
 }
@@ -94,9 +119,10 @@ function renderSidebar() {
   const sidebar = document.getElementById("categorySidebar");
   sidebar.innerHTML = "";
   CATEGORIES[currentType].subs.forEach((sub) => {
+    const count = allProducts.filter(p => p.subcategory === sub).length;
     const btn = document.createElement("button");
     btn.className = "category-btn" + (sub === currentSub ? " active" : "");
-    btn.textContent = sub;
+    btn.innerHTML = `<span>${sub}</span> <span class="badge ${sub === currentSub ? 'bg-warning text-dark' : 'bg-white text-dark'} rounded-pill px-2 small fw-bold shadow-sm">${count}</span>`;
     btn.onclick = () => {
       currentSub = sub;
       renderSidebar();
@@ -110,81 +136,136 @@ function renderSidebar() {
 function renderGrid() {
   const grid = document.getElementById("productGrid");
   grid.innerHTML = "";
+
   const items = allProducts.filter((p) => p.subcategory === currentSub);
+
+  document.getElementById("itemCountBadge").textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+
   if (!items.length) {
-    grid.innerHTML = '<p class="text-white">No items in this category yet.</p>';
+    grid.innerHTML = `
+      <div class="col-12 text-center py-5 text-white">
+        <div class="fs-1 mb-2">🍽️</div>
+        <h5>No items found</h5>
+        <p class="small text-white-50">Try searching for something else or pick another category.</p>
+      </div>`;
     return;
   }
+
   items.forEach((p) => {
     const col = document.createElement("div");
-    col.className = "col-md-4 col-lg-3";
+    col.className = "col-md-6 col-lg-4";
+    const isOutOfStock = p.stock <= 0;
+    const isLowStock = p.stock > 0 && p.stock <= (p.lowStockThreshold || 5);
+
     col.innerHTML = `
       <div class="card product-card h-100">
-        <div class="placeholder-img d-flex align-items-center justify-content-center text-secondary">No Image</div>
-        <div class="card-body">
-          <h6 class="fw-bold mb-1">${p.name}</h6>
-          <p class="small text-muted mb-1">${p.description || ""}</p>
-          <p class="fw-bold mb-2">${peso(p.price)}</p>
-          <p class="small ${p.stock <= p.lowStockThreshold ? "text-danger" : "text-success"} mb-2">
-            ${p.stock > 0 ? p.stock + " in stock" : "Out of stock"}
-          </p>
-          <button class="btn btn-orange btn-sm w-100" ${p.stock <= 0 ? "disabled" : ""} data-id="${p._id}">ADD TO CART</button>
+        <div class="position-relative">
+          ${p.imageUrl 
+            ? `<img src="${p.imageUrl}" alt="${p.name}" class="card-img-top" />`
+            : `<div class="placeholder-img d-flex flex-column align-items-center justify-content-center text-muted">
+                 <span class="fs-2 mb-1">${currentType === 'food' ? '🍗' : '☕'}</span>
+                 <span class="small fw-semibold text-secondary">LATK Special</span>
+               </div>`
+          }
+          <span class="position-absolute top-0 end-0 m-2 badge ${isOutOfStock ? 'bg-danger' : isLowStock ? 'bg-warning text-dark' : 'bg-success'} rounded-pill px-3 py-1 shadow-sm">
+            ${isOutOfStock ? 'Out of stock' : isLowStock ? `Only ${p.stock} left` : 'In Stock'}
+          </span>
+        </div>
+        <div class="card-body d-flex flex-column p-3">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <h6 class="fw-bold mb-0 text-dark fs-6">${p.name}</h6>
+            <span class="product-price-tag ms-2">${peso(p.price)}</span>
+          </div>
+          <p class="small text-muted mb-3 flex-grow-1" style="font-size:0.85rem; line-height:1.4;">${p.description || "Freshly prepared signature item."}</p>
+          
+          <button class="btn btn-orange btn-sm w-100 py-2 rounded-pill mt-auto shadow-sm" ${isOutOfStock ? "disabled" : ""} data-id="${p._id}">
+            ${isOutOfStock ? 'UNAVAILABLE' : '+ ADD TO CART'}
+          </button>
         </div>
       </div>`;
+
     col.querySelector("button").addEventListener("click", () => {
       addToCart(p);
       renderCart();
+      triggerToast(`Added <strong>${p.name}</strong> to your cart!`);
+      
+      const cartBtn = document.getElementById("cartToggleBtn");
+      cartBtn.classList.add("cart-bounce");
+      setTimeout(() => cartBtn.classList.remove("cart-bounce"), 400);
     });
+
     grid.appendChild(col);
   });
 }
 
+// Category Switcher Logic
 document.getElementById("tabFood").addEventListener("click", () => {
   currentType = "food";
   currentSub = CATEGORIES.food.subs[0];
-  document.getElementById("tabFood").className = "btn btn-maroon px-4";
-  document.getElementById("tabDrinks").className = "btn btn-outline-light px-4";
-  document.getElementById("tabDrinks").style.borderColor = "#fff";
-  document.getElementById("tabDrinks").style.color = "#fff";
-  loadProducts();
-});
-document.getElementById("tabDrinks").addEventListener("click", () => {
-  currentType = "drinks";
-  currentSub = CATEGORIES.drinks.subs[0];
-  document.getElementById("tabDrinks").className = "btn btn-maroon px-4";
-  document.getElementById("tabFood").className = "btn btn-outline-light px-4";
-  document.getElementById("tabFood").style.borderColor = "#fff";
-  document.getElementById("tabFood").style.color = "#fff";
+  document.getElementById("tabFood").style.background = "var(--latk-maroon)";
+  document.getElementById("tabFood").className = "btn btn-tab-pill px-4 py-2 text-white";
+  document.getElementById("tabDrinks").style.background = "transparent";
+  document.getElementById("tabDrinks").className = "btn btn-tab-pill px-4 py-2 text-dark";
   loadProducts();
 });
 
-// Cart drawer
+document.getElementById("tabDrinks").addEventListener("click", () => {
+  currentType = "drinks";
+  currentSub = CATEGORIES.drinks.subs[0];
+  document.getElementById("tabDrinks").style.background = "var(--latk-maroon)";
+  document.getElementById("tabDrinks").className = "btn btn-tab-pill px-4 py-2 text-white";
+  document.getElementById("tabFood").style.background = "transparent";
+  document.getElementById("tabFood").className = "btn btn-tab-pill px-4 py-2 text-dark";
+  loadProducts();
+});
+
+// Cart Drawer open/close
 const drawer = document.getElementById("cartDrawer");
-document.getElementById("cartToggleBtn").addEventListener("click", () => drawer.classList.add("open"));
-document.getElementById("closeCartBtn").addEventListener("click", () => drawer.classList.remove("open"));
+const overlay = document.getElementById("cartOverlay");
+
+function openCart() {
+  drawer.classList.add("open");
+  overlay.classList.add("active");
+}
+function closeCart() {
+  drawer.classList.remove("open");
+  overlay.classList.remove("active");
+}
+
+document.getElementById("cartToggleBtn").addEventListener("click", openCart);
+document.getElementById("closeCartBtn").addEventListener("click", closeCart);
+overlay.addEventListener("click", closeCart);
 
 function renderCart() {
   refreshCartBadge();
   const cart = getCart();
   const container = document.getElementById("cartItems");
+
   if (!cart.length) {
-    container.innerHTML = '<p class="text-white-50">Your cart is empty.</p>';
+    container.innerHTML = `
+      <div class="text-center py-5 text-white-50">
+        <div class="fs-1 mb-2">🛒</div>
+        <p class="mb-0">Your cart is empty.</p>
+        <span class="small">Add delicious items from the menu!</span>
+      </div>`;
   } else {
     container.innerHTML = cart
       .map(
         (i) => `
-      <div class="d-flex gap-2 align-items-center bg-white bg-opacity-10 rounded p-2 mb-2">
-        <div class="placeholder-img" style="width:56px;height:56px;flex-shrink:0;"></div>
+      <div class="d-flex gap-3 align-items-center bg-white bg-opacity-10 rounded-3 p-3 mb-2 border border-white border-opacity-10">
+        <div class="bg-white bg-opacity-20 rounded d-flex align-items-center justify-content-center text-white fs-4" style="width:52px;height:52px;flex-shrink:0;">
+          ${currentType === 'food' ? '🍗' : '☕'}
+        </div>
         <div class="flex-grow-1">
-          <div class="d-flex justify-content-between">
-            <strong>${i.name}</strong>
-            <button class="btn btn-sm btn-link text-white p-0" onclick="removeItem('${i.productId}')">✕</button>
+          <div class="d-flex justify-content-between align-items-start">
+            <strong class="text-white fs-6 mb-1">${i.name}</strong>
+            <button class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none ms-2" onclick="removeItem('${i.productId}')">✕</button>
           </div>
-          <div class="small">${peso(i.price)}</div>
-          <div class="d-flex align-items-center gap-2 mt-1">
-            <button class="btn btn-sm btn-light" onclick="changeQty('${i.productId}', -1)">-</button>
-            <span>${i.qty}</span>
-            <button class="btn btn-sm btn-light" onclick="changeQty('${i.productId}', 1)">+</button>
+          <div class="small text-warning fw-semibold mb-2">${peso(i.price)}</div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-light py-0 px-2 fw-bold" onclick="changeQty('${i.productId}', -1)">-</button>
+            <span class="fw-bold px-1">${i.qty}</span>
+            <button class="btn btn-sm btn-light py-0 px-2 fw-bold" onclick="changeQty('${i.productId}', 1)">+</button>
           </div>
         </div>
       </div>`
@@ -193,6 +274,7 @@ function renderCart() {
   }
   document.getElementById("cartSubtotal").textContent = peso(cartSubtotal());
 }
+
 function changeQty(id, delta) {
   updateCartQty(id, delta);
   renderCart();
@@ -201,6 +283,19 @@ function removeItem(id) {
   removeFromCart(id);
   renderCart();
 }
+
+function triggerToast(msg) {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = "alert alert-dark text-white bg-dark border-secondary shadow-lg py-2 px-3 small rounded-pill fade show mb-2 d-flex align-items-center gap-2";
+  toast.innerHTML = `<span>✅</span> <span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 200);
+  }, 2200);
+}
+
 document.getElementById("checkoutBtn").addEventListener("click", () => {
   if (!getCart().length) return;
   window.location.href = "checkout.html";
