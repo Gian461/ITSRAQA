@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Order Confirmed - LATK Cafe</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-latk px-4">
+  <a class="navbar-brand" href="home.html"><img src="img/logo.svg" width="42" height="42" alt="LATK" /></a>
+</nav>
+
+<div class="container my-5" style="max-width:640px;">
+  <div class="text-center mb-4">
+    <div style="font-size:4rem; color:#0a5c36;">✔</div>
+    <h2 class="fw-bold">Order Confirmed!</h2>
+    <p class="text-muted">Thank you for ordering with Lolo And The Kid Cafe. Your food is on its way soon.</p>
+  </div>
+
+  <div id="orderCard" class="card p-4 shadow-sm"></div>
+
+  <div class="text-center mt-4 d-flex justify-content-center gap-3">
+    <a href="menu.html" class="btn btn-orange">Order More</a>
+    <a href="order-status.html" class="btn btn-maroon">Track My Orders</a>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+requireAuth();
+const params = new URLSearchParams(window.location.search);
+const orderId = params.get("id");
+
+async function loadOrder() {
+  if (!orderId) return;
+  try {
+    const { order } = await api(`/orders/${orderId}`);
+    const el = document.getElementById("orderCard");
+    el.innerHTML = `
+      <div class="d-flex justify-content-between mb-2">
+        <strong>Order #${order._id.slice(-6).toUpperCase()}</strong>
+        <span class="status-badge status-${order.status.replace(/\s/g, "-")}">${order.status}</span>
+      </div>
+      <p class="small text-muted mb-3">Placed on ${new Date(order.createdAt).toLocaleString()}</p>
+      ${order.items.map((i) => `<div class="d-flex justify-content-between"><span>${i.name} x${i.qty}</span><span>${peso(i.price * i.qty)}</span></div>`).join("")}
+      <hr />
+      <div class="d-flex justify-content-between"><span>Subtotal</span><span>${peso(order.subtotal)}</span></div>
+      <div class="d-flex justify-content-between"><span>Delivery Fee</span><span>${peso(order.deliveryFee)}</span></div>
+      <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span>${peso(order.total)}</span></div>
+      <hr />
+      <p class="mb-1"><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+      <p class="mb-0"><strong>Deliver to:</strong> ${order.deliveryAddress.firstName} ${order.deliveryAddress.lastName}, ${order.deliveryAddress.address}, ${order.deliveryAddress.barangay}, ${order.deliveryAddress.city}</p>
+    `;
+  } catch (err) {
+    document.getElementById("orderCard").innerHTML = `<p class="text-danger">${err.message}</p>`;
+  }
+}
+loadOrder();
+</script>
+</body>
+</html>
