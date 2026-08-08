@@ -3,118 +3,163 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Reports - LATK Admin</title>
+<title>Sales Analytics & Reports - LATK Admin</title>
 <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="/css/style.css" rel="stylesheet">
 </head>
-<body>
-<div class="d-flex">
-  <div class="admin-sidebar p-3" style="width:230px;">
-    <div class="d-flex align-items-center gap-2 mb-4">
-      <img src="/img/logo.svg" width="42" height="42" alt="LATK" />
-      <strong>LATK Admin</strong>
-    </div>
-    <a href="dashboard.html">📊 Dashboard</a>
-    <a href="accounts.html">👥 Accounts</a>
-    <a href="inventory.html">📦 Inventory</a>
-    <a href="orders.html">🧾 Orders</a>
-    <a href="reports.html" class="active">📈 Reports</a>
-    <a href="#" onclick="logout()">🚪 Logout</a>
-  </div>
+<body class="bg-light">
 
-  <div class="flex-grow-1 p-4">
+<div class="d-flex min-vh-100">
+  <div id="adminSidebar"></div>
+
+  <div class="flex-grow-1 p-4 overflow-auto">
+    <!-- Header Title Bar -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3 class="fw-bold mb-0">Generated Reports</h3>
-      <button class="btn btn-orange" onclick="window.print()">🖨 Print / Export</button>
+      <div>
+        <h3 class="fw-bold mb-1" style="color: var(--latk-maroon);">Sales & Performance Reports</h3>
+        <p class="text-muted small mb-0">System performance metrics, revenue charts, and top selling products</p>
+      </div>
+      <button class="btn btn-orange px-4 py-2 shadow-sm" onclick="window.print()">🖨️ Print / Export Report</button>
     </div>
 
-    <div class="row g-3 mb-4" id="statCards"></div>
+    <!-- Stat Metric Cards -->
+    <div class="row g-3 mb-4" id="statCards">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Analytical Progress Cards -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card stat-card p-4 shadow-sm border-0 h-100">
+          <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <span>📊</span> Orders Breakdown by Status
+          </h6>
+          <div id="statusBreakdown" class="flex-grow-1"></div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card stat-card p-4 shadow-sm border-0 h-100">
+          <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <span>🏆</span> Top Selling Products
+          </h6>
+          <div id="topProducts" class="flex-grow-1"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card stat-card p-3">
-          <h6 class="fw-bold">Orders by Status</h6>
-          <div id="statusBreakdown"></div>
+        <div class="card stat-card p-4 shadow-sm border-0 h-100">
+          <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <span>📅</span> Revenue Trends by Date
+          </h6>
+          <div id="revenueByDay" class="flex-grow-1"></div>
         </div>
       </div>
+
       <div class="col-md-6">
-        <div class="card stat-card p-3">
-          <h6 class="fw-bold">Top Selling Products</h6>
-          <div id="topProducts"></div>
+        <div class="card stat-card p-4 shadow-sm border-0 h-100">
+          <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <span>📦</span> Stock Replenishment Log
+          </h6>
+          <div id="restockLogs" class="flex-grow-1"></div>
         </div>
       </div>
     </div>
 
-    <div class="row g-4 mt-1">
-      <div class="col-md-6">
-        <div class="card stat-card p-3">
-          <h6 class="fw-bold">Revenue by Day</h6>
-          <div id="revenueByDay"></div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card stat-card p-3">
-          <h6 class="fw-bold">Recent Inventory Replenishment</h6>
-          <div id="restockLogs"></div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
 <script src="/js/api.js"></script>
+<script src="/admin/admin-components.js"></script>
 <script>
 requireAdminAuth();
+renderAdminSidebar("reports");
 
 function bar(label, value, max, color) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   return `
-    <div class="mb-2">
-      <div class="d-flex justify-content-between small"><span>${label}</span><span>${value}</span></div>
-      <div class="progress" style="height:8px;"><div class="progress-bar" style="width:${pct}%; background:${color};"></div></div>
+    <div class="mb-3">
+      <div class="d-flex justify-content-between small fw-bold mb-1">
+        <span class="text-dark">${label}</span>
+        <span class="text-secondary">${value}</span>
+      </div>
+      <div class="progress rounded-pill" style="height:10px; background:#e9ecef;">
+        <div class="progress-bar rounded-pill" style="width:${pct}%; background:${color};"></div>
+      </div>
     </div>`;
 }
 
-async function load() {
-  const r = await api("/admin/reports");
+async function loadReports() {
+  try {
+    const r = await api("/admin/reports");
 
-  document.getElementById("statCards").innerHTML = `
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Total Revenue</div><div class="fs-4 fw-bold">${peso(r.totalRevenue)}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Total Orders</div><div class="fs-4 fw-bold">${r.totalOrders}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Registered Customers</div><div class="fs-4 fw-bold">${r.totalCustomers}</div></div></div>
-    <div class="col-md-3"><div class="card stat-card p-3"><div class="small text-muted">Low Stock Items</div><div class="fs-4 fw-bold text-danger">${r.lowStock.length}</div></div></div>
-  `;
+    document.getElementById("statCards").innerHTML = `
+      <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card p-3 shadow-sm border-0 border-start border-4 border-success">
+          <div class="small text-muted fw-bold">TOTAL REVENUE</div>
+          <div class="fs-3 fw-bold text-dark">${peso(r.totalRevenue)}</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card p-3 shadow-sm border-0 border-start border-4 border-primary">
+          <div class="small text-muted fw-bold">TOTAL ORDERS</div>
+          <div class="fs-3 fw-bold text-dark">${r.totalOrders}</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card p-3 shadow-sm border-0 border-start border-4 border-info">
+          <div class="small text-muted fw-bold">REGISTERED CUSTOMERS</div>
+          <div class="fs-3 fw-bold text-dark">${r.totalCustomers}</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card p-3 shadow-sm border-0 border-start border-4 border-danger">
+          <div class="small text-muted fw-bold">LOW STOCK ITEMS</div>
+          <div class="fs-3 fw-bold text-danger">${r.lowStock.length}</div>
+        </div>
+      </div>`;
 
-  const statusEntries = Object.entries(r.ordersByStatus);
-  const maxStatus = Math.max(1, ...statusEntries.map(([, v]) => v));
-  document.getElementById("statusBreakdown").innerHTML = statusEntries.length
-    ? statusEntries.map(([status, count]) => bar(status, count, maxStatus, "var(--latk-orange)")).join("")
-    : `<p class="text-muted small mb-0">No orders yet.</p>`;
+    const statusEntries = Object.entries(r.ordersByStatus || {});
+    const maxStatus = Math.max(1, ...statusEntries.map(([, v]) => v));
+    document.getElementById("statusBreakdown").innerHTML = statusEntries.length
+      ? statusEntries.map(([status, count]) => bar(status, `${count} order${count!==1?'s':''}`, maxStatus, "var(--latk-orange)")).join("")
+      : `<p class="text-muted small my-3">No orders recorded yet.</p>`;
 
-  const maxTop = Math.max(1, ...r.topProducts.map((p) => p.qty));
-  document.getElementById("topProducts").innerHTML = r.topProducts.length
-    ? r.topProducts.map((p) => bar(p.name, p.qty, maxTop, "var(--latk-maroon)")).join("")
-    : `<p class="text-muted small mb-0">No sales data yet.</p>`;
+    const maxTop = Math.max(1, ...r.topProducts.map((p) => p.qty));
+    document.getElementById("topProducts").innerHTML = r.topProducts.length
+      ? r.topProducts.map((p) => bar(p.name, `${p.qty} sold`, maxTop, "var(--latk-maroon)")).join("")
+      : `<p class="text-muted small my-3">No sales activity yet.</p>`;
 
-  const maxRev = Math.max(1, ...r.revenueByDay.map((d) => d.revenue));
-  document.getElementById("revenueByDay").innerHTML = r.revenueByDay.length
-    ? r.revenueByDay.map((d) => bar(d.date, Math.round(d.revenue), maxRev, "#0a5c36")).join("")
-    : `<p class="text-muted small mb-0">No revenue recorded yet.</p>`;
+    const maxRev = Math.max(1, ...r.revenueByDay.map((d) => d.revenue));
+    document.getElementById("revenueByDay").innerHTML = r.revenueByDay.length
+      ? r.revenueByDay.map((d) => bar(d.date, peso(d.revenue), maxRev, "#198754")).join("")
+      : `<p class="text-muted small my-3">No daily revenue recorded yet.</p>`;
 
-  document.getElementById("restockLogs").innerHTML = r.restockLogs.length
-    ? r.restockLogs
-        .map(
-          (log) => `
-      <div class="d-flex justify-content-between border-bottom py-1 small">
-        <span>${log.product ? log.product.name : "Deleted product"} (+${log.qty})</span>
-        <span class="text-muted">${new Date(log.createdAt).toLocaleString()}</span>
-      </div>`
-        )
-        .join("")
-    : `<p class="text-muted small mb-0">No replenishment activity yet.</p>`;
+    document.getElementById("restockLogs").innerHTML = r.restockLogs.length
+      ? r.restockLogs
+          .map(
+            (log) => `
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+          <div>
+            <strong class="text-dark d-block">${log.product ? log.product.name : "Deleted product"}</strong>
+            <span class="text-muted">${new Date(log.createdAt).toLocaleString()}</span>
+          </div>
+          <span class="badge bg-success rounded-pill px-3">+${log.qty} added</span>
+        </div>`
+          )
+          .join("")
+      : `<p class="text-muted small my-3">No stock replenishment history recorded yet.</p>`;
+
+  } catch (err) {
+    console.error("Reports error:", err);
+  }
 }
-load();
+
+loadReports();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
