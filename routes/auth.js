@@ -6,8 +6,10 @@ const { authenticate } = require("../middleware/auth");
 
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || "default_latk_secret_2026";
+
 function signToken(user) {
-  return jwt.sign({ id: user._id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user._id, isAdmin: user.isAdmin }, JWT_SECRET, {
     expiresIn: "7d",
   });
 }
@@ -52,8 +54,8 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error while creating account." });
+    console.error("Register Error:", err);
+    res.status(500).json({ message: err.message || "Server error while creating account." });
   }
 });
 
@@ -86,8 +88,8 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error while logging in." });
+    console.error("Login Error:", err);
+    res.status(500).json({ message: err.message || "Server error while logging in." });
   }
 });
 
