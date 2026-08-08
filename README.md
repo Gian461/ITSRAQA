@@ -17,12 +17,11 @@ Ensure you have the following installed on your machine:
 
 Follow these steps to set up and run the project locally on your machine:
 
-### 1. Clone the Repository & Switch Branch
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Gian461/ITSRAQA.git
 cd ITSRAQA
-git checkout andre-working-branch
 ```
 
 ### 2. Install Dependencies
@@ -83,65 +82,3 @@ Open your browser and visit: **[http://localhost:5000](http://localhost:5000)**
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin` | `admin123` | `http://localhost:5000/admin/login.html` |
 | **Customer** | `juandelacruz` | `customer123` | `http://localhost:5000/login.html` |
-
----
-
-## 📁 Project Directory Structure
-
-```
-ITSRAQA/
-├── admin/                 # Admin Dashboard frontend (Inventory, Orders, Reports, Accounts)
-├── api/                   # Entry point for Vercel Serverless Functions
-│   └── index.js
-├── config/                # Mongoose database connection configuration
-│   └── db.js
-├── middleware/            # Auth & Admin route protection middleware
-│   └── auth.js
-├── models/                # MongoDB Mongoose Data Models
-│   ├── Order.js
-│   ├── Product.js
-│   ├── StockLog.js
-│   └── User.js
-├── public/                # Customer frontend assets (HTML, CSS, client-side JS)
-│   ├── css/
-│   │   └── style.css
-│   ├── img/
-│   │   ├── logo.svg
-│   │   └── cafe-bg.png
-│   ├── js/
-│   │   └── api.js
-│   ├── about.html
-│   ├── checkout.html
-│   ├── contact.html
-│   ├── home.html
-│   ├── login.html
-│   ├── menu.html
-│   ├── order-confirmation.html
-│   ├── order-status.html
-│   └── register.html
-├── routes/                # Express REST API endpoints
-│   ├── admin.js           # Inventory CRUD, status updates, analytics reports
-│   ├── auth.js            # User registration & login
-│   ├── orders.js          # Checkout & customer order tracking
-│   └── products.js        # Product catalog filtering
-├── seed/                  # Database seeding script
-│   └── seed.js
-├── .env.example
-├── .gitignore
-├── package.json
-├── server.js              # Express server entry point
-└── vercel.json            # Vercel deployment configuration
-```
-
----
-
-## 🌐 Deploying to Vercel
-
-This project includes a `vercel.json` and serverless wrapper (`api/index.js`). To deploy on Vercel:
-
-1. Push your changes to GitHub.
-2. Import the repository in [Vercel](https://vercel.com).
-3. Set the Environment Variables in Vercel project settings:
-   * `MONGO_URI`: Your MongoDB Atlas connection string.
-   * `JWT_SECRET`: A secure random secret string.
-4. Deploy!
