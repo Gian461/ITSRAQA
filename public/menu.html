@@ -100,8 +100,28 @@ renderNavbar("menu");
 renderFooter();
 
 const CATEGORIES = {
-  food: { subs: ["Grilled", "Steak", "Fried"], caption: "Unli-Rice w/ Dessert!" },
-  drinks: { subs: ["Coffee-Based", "Frappuccino", "Matcha"], caption: "Hot & Iced Specialty Drinks" },
+  food: { 
+    subs: ["Grilled", "Steak", "Fried", "Pansit", "Pasta", "Sandwiches", "Pastries & Desserts"],
+    defaultCaption: "Grilled, Steaks, Pastas & Homemade Delights"
+  },
+  drinks: { 
+    subs: ["Coffee-Based", "Frappuccino", "Matcha", "Mocktails"],
+    defaultCaption: "Specialty Coffee, Frappes, Matcha & Refreshing Mocktails"
+  },
+};
+
+const SUB_CAPTIONS = {
+  "Grilled": "Unli-Rice with Dessert!",
+  "Steak": "Roasted Potato or Fried Rice",
+  "Fried": "Golden Crispy Dishes & Seasoned Fries",
+  "Pansit": "Traditional Noodles & Savory Combos",
+  "Pasta": "Rich & Creamy Signature Pastas",
+  "Sandwiches": "Served with Homemade Chips & Dips",
+  "Pastries & Desserts": "Freshly Baked Pastries & Sweets",
+  "Coffee-Based": "Hot & Iced Specialty Coffee Drinks",
+  "Frappuccino": "Ice-Blended Signature Frappes",
+  "Matcha": "Japanese Green Tea & Layered Beverages",
+  "Mocktails": "Refreshing Sparkling Fruit Mocktails"
 };
 
 let currentType = "food";
@@ -111,6 +131,13 @@ let allProducts = [];
 async function loadProducts() {
   const data = await api(`/products?type=${currentType}`);
   allProducts = data.products || [];
+  
+  // Ensure currentSub exists in fetched products or fallback to first available subcategory
+  const availableSubs = CATEGORIES[currentType].subs;
+  if (!availableSubs.includes(currentSub)) {
+    currentSub = availableSubs[0];
+  }
+  
   renderSidebar();
   renderGrid();
 }
@@ -130,7 +157,7 @@ function renderSidebar() {
     };
     sidebar.appendChild(btn);
   });
-  document.getElementById("sectionCaption").textContent = CATEGORIES[currentType].caption;
+  document.getElementById("sectionCaption").textContent = SUB_CAPTIONS[currentSub] || CATEGORIES[currentType].defaultCaption;
 }
 
 function renderGrid() {

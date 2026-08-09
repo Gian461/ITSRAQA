@@ -94,7 +94,7 @@
             <div class="col-md-6">
               <label class="form-label small fw-bold">SUBCATEGORY</label>
               <select class="form-select form-control-latk" id="pSub" required>
-                <option>Grilled</option><option>Steak</option><option>Fried</option>
+                <option>Grilled</option><option>Steak</option><option>Fried</option><option>Pansit</option><option>Pasta</option><option>Sandwiches</option><option>Pastries &amp; Desserts</option>
               </select>
             </div>
           </div>
@@ -126,8 +126,8 @@ requireAdminAuth();
 renderAdminSidebar("inventory");
 
 const SUBS = {
-  food: ["Grilled", "Steak", "Fried"],
-  drinks: ["Coffee-Based", "Frappuccino", "Matcha"],
+  food: ["Grilled", "Steak", "Fried", "Pansit", "Pasta", "Sandwiches", "Pastries & Desserts"],
+  drinks: ["Coffee-Based", "Frappuccino", "Matcha", "Mocktails"],
 };
 let allProducts = [];
 let activeTypeFilter = "all";
