@@ -85,7 +85,7 @@ const DRINKS = [
   { name: "Mango Whip", subcategory: "Mocktails", price: 150, description: "Creamy tropical mango whip iced drink." },
 ];
 
-async function run() {
+async function seedDatabase(disconnect = false) {
   await connectDB();
 
   console.log("Clearing existing data...");
@@ -126,15 +126,16 @@ async function run() {
   await Product.insertMany([...foodDocs, ...drinkDocs]);
 
   console.log("Done!");
-  console.log("----------------------------------------");
-  console.log("Admin login   -> username: admin      password: admin123");
-  console.log("Customer login-> username: juandelacruz password: customer123");
-  console.log("----------------------------------------");
-
-  await mongoose.disconnect();
+  if (disconnect) await mongoose.disconnect();
+  return { message: "Database seeded successfully with food, drinks, admin, and customer accounts!" };
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seedDatabase(true).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+module.exports = seedDatabase;
+

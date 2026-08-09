@@ -22,7 +22,7 @@ app.use(async (req, res, next) => {
   } catch (err) {
     if (req.path.startsWith("/api/")) {
       return res.status(500).json({
-        message: "Database connection error. Ensure MONGO_URI is set in Vercel environment variables.",
+        message: `Database connection error (${err.message}). Ensure MONGO_URI is correctly set in Vercel environment variables.`,
         error: err.message,
       });
     }
@@ -35,6 +35,17 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Seed route to populate database on Vercel or locally
+const seedDatabase = require("./seed/seed");
+app.all("/api/seed", async (req, res) => {
+  try {
+    const result = await seedDatabase(false);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: "Seed failed", error: err.message });
+  }
+});
 
 // Static frontend (customer + admin)
 app.use(express.static(path.join(__dirname, "public")));
